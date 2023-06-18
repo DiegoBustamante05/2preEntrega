@@ -1,0 +1,77 @@
+import express from "express";
+import handlebars from "express-handlebars";
+import { ProductManager } from "./DAO/productManager.js";
+import { routerProducts } from "./routes/products.router.js";
+import { routerViewProducts } from "./routes/products.view.router.js";
+import { routerViewRealTimeProducts } from "./routes/realtimeproducts.view.router.js";
+import { routerCarts } from "./routes/cart.router.js";
+import { __dirname, connectMongo } from "./utils.js";
+import { Server } from "socket.io";
+
+
+const app = express();
+const port = 8080;
+
+//mongodb+srv://diegobustamante:coder2023@bustamantedb.2llatvf.mongodb.net/?retryWrites=true&w=majority
+connectMongo();
+
+const productManager = new ProductManager();
+
+const httpServer = app.listen(port, () => {
+    console.log(`Server running on port http://localhost:${port}`);
+});
+const socketServer = new Server(httpServer)
+
+
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
+
+app.engine("handlebars", handlebars.engine());
+app.set("views", __dirname + "/views");
+app.set("view engine", "handlebars");
+
+app.use("/api/products", routerProducts);
+app.use("/api/carts", routerCarts);
+
+app.use("/view/products", routerViewProducts)
+app.use("/view/realtimeproducts", routerViewRealTimeProducts)
+
+app.use(express.static(__dirname + "/public"));
+
+
+app.get("*", (req, res) => {
+    res.status(404).send({
+        status: "error",
+        data: "Page not found",
+    });
+});
+
+socketServer.on("connection", (socket) =>{
+    console.log(`New Connection: ${socket.id}`);
+    socket.on("new-product", async (newProduct) => {
+        try {
+            await productManager.addProduct(newProduct);
+            const productsList = await productManager.getProducts();
+            socketServer.emit("products", { productsList });
+        } catch (error){
+            console.log(error);
+        }
+    });
+    socket.on("id-to-delete", async (id) => {
+        try {
+            console.log("el id es " + id)
+            await productManager.deleteProduct(id);
+            const productsListDeleted = await productManager.getProducts();
+            socketServer.emit("products-deleted", { productsListDeleted });
+        } catch (error){
+            console.log(error);
+        }
+    });
+});
+
+
+
+
+
+
+
