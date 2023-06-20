@@ -11,7 +11,6 @@ export const routerViewProducts = express.Router();
 
 routerViewProducts.get("/", async (req, res) => {
         const { page } = req.query
-        console.log(page)
         const limitedProducts = await ProductModel.paginate({}, { limit:9, page: page || 1 });
         const products = limitedProducts.docs.map(product=>{
             return{
@@ -23,6 +22,5 @@ routerViewProducts.get("/", async (req, res) => {
                 category: product.category,
             };
         });
-        
-        return res.render('home', { title: "Products", products: products} );
+        return res.render('home', { title: "Products", products: products, pagingCounter: limitedProducts.pagingCounter, totalPages: limitedProducts.totalPages, page: limitedProducts.page, hasPrevPage: limitedProducts.hasPrevPage, hasNextPage: limitedProducts.hasNextPage, prevPage: limitedProducts.prevPage, nextPage: limitedProducts.nextPage} );
 });

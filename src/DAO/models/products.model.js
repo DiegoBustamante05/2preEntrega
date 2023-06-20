@@ -12,5 +12,8 @@ const schema = new Schema({
     category: { type: String, required: true, max: 100 },
     status: { type: Boolean, required: true, max: 100},
 });
+
 schema.plugin(mongoosePaginate);
 export const ProductModel = model('products', schema);
+
+
