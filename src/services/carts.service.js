@@ -69,9 +69,13 @@ export class CartService {
 
     //actualizar carrito con nuevo array de productos
     async updateCart(cid, products) {
-        const cart = await CartModel.findById(cid);
-        cart.products = products;
-        await cart.save();
+        const newArray = products.products.map((product => {
+            return {
+                product: product._id,
+                quantity: product.quantity
+            }
+        }))
+        const cart = await CartModel.findByIdAndUpdate(cid, { products: newArray });
     }
 
     //eliminar un producto del carrito OK!!

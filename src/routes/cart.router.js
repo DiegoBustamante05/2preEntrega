@@ -133,3 +133,20 @@ routerCarts.put('/:cid/product/:pid', async (req, res) => {
 });
 
 
+routerCarts.put('/:cid', async (req, res) => {
+    try {
+    const cid = req.params.cid;
+    const products = req.body;
+    console.log(products)
+    await Service.updateCart(cid, products);
+    res.status(200).json({
+            status: 'success',
+            message: `product updated`,
+        });
+    } catch (error) {
+    res.status(500).json({
+            status: 'error',
+            message: error.message,
+        });    
+    }
+});
