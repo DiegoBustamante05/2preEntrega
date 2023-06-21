@@ -55,28 +55,32 @@ routerCarts.get('/:cid', async (req, res) => {
     }
 });
 
+
 //OK
-routerCarts.put('/:cid', async (req, res) => {
-    const cid = req.params.cid
-    const productId = req.body.productId
+routerCarts.post("/:cid/product/:pid", async (req, res) => {
     try {
-        const addProduct = await Service.addProdtoCart(cid, productId);
-        res.status(200).json({
-            status: 'success',
-            data: addProduct,
-        });
+        let cid = req.params.cid;
+        let pid = req.params.pid;
+        await Service.addProductToCart(cid, pid);
+
+        res
+            .status(200)
+            .send({
+                status: "success",
+                data: "product added"
+            });
     } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            message: error.message,
+        res.status(404).send({
+            status: "error",
+            error: error.message
         });
     }
 });
 
-//OK
+//OK 
 routerCarts.delete('/:cid', async (req, res) => {
     try {
-        const cid = req.params.cid
+        const cid = req.params.cid;
         console.log(cid)
         const clear = await Service.clearCart(cid);
         res.status(200).json({
@@ -94,9 +98,9 @@ routerCarts.delete('/:cid', async (req, res) => {
 //OK
 routerCarts.delete('/:cid/product/:pid', async (req, res) => {
     try {
-        const cid = req.params.cid
-        const pid = req.params.cid
-        productToDelete = await Service.deleteProductInCart(cid, pid)
+        const cid = req.params.cid;
+        const pid = req.params.pid;
+        const productToDelete = await Service.deleteProductInCart(cid, pid)
         res.status(200).json({
             status: 'success',
             message: 'product deleted',
@@ -109,16 +113,16 @@ routerCarts.delete('/:cid/product/:pid', async (req, res) => {
     }
 });
 
-
+//OK
 routerCarts.put('/:cid/product/:pid', async (req, res) => {
     try {
-        const cid = req.params.cid
-        const pid = req.params.cid
-        const quantity = req.body.quantity
+        const cid = req.params.cid;
+        const pid = req.params.pid;
+        const quantity = req.body.quantity;
         const productUpdated = Service.updateQuantity(cid, pid, quantity)
         res.status(200).json({
             status: 'success',
-            message: `product ${productUpdated} deleted`,
+            message: `product updated`,
         });
     } catch (error) {
         res.status(500).json({
@@ -127,3 +131,5 @@ routerCarts.put('/:cid/product/:pid', async (req, res) => {
         });
     }
 });
+
+

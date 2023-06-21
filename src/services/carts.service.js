@@ -1,6 +1,9 @@
 import {
     CartModel
 } from '../DAO/models/carts.model.js';
+import { ProductService } from './products.service.js';
+
+const productsService = new ProductService();
 
 export class CartService {
     constructor() {}
@@ -12,33 +15,54 @@ export class CartService {
         });
         return newCart;
     }
-    
+
     //obtener carrito por id OK!!
     async getCartById(id) {
         const cart = await CartModel.findById(id);
-        console.log(JSON.stringify(cart, null, 2));
         return cart;
     }
 
+    //agregar producto al carrito OK!!
+    async addProductToCart(cId, pId) {
+        try {
+            const productToAdd = await productsService.getById(pId);
 
-    async addProdtoCart(cId, pId) {
-        const cart = await CartModel.findById(cId);
-        const product = {
-            product: pId,
-            quantity: 1,
-        };
-        
-        const productExist = cart.products.find((product) => product.product == pId);
-        productExist ? productExist.quantity++ : cart.products.addToSet(product);
-        await cart.save();
-        return product;
+            if (!productToAdd) {
+                throw new Error("Product not found");
+            }
+
+            console.log(productToAdd._id);
+
+            let cart = await CartModel.findOneAndUpdate({
+                _id: cId,
+                "products.product": productToAdd._id
+            }, {
+                $inc: {
+                    "products.$.quantity": 1
+                },
+            });
+
+            if (!cart) {
+                cart = await CartModel.findByIdAndUpdate(cId, {
+                    $push: {
+                        products: {
+                            product: productToAdd._id,
+                            quantity: 1
+                        }
+                    },
+                });
+            }
+
+            return cart;
+        } catch (error) {
+            throw new Error(error);
+        }
     }
 
 
     //borrar todos los products  del carrito OK!!
     async clearCart(cid) {
         const cart = await CartModel.findById(cid);
-        console.log(cart)
         cart.products = [];
         await cart.save();
     }
@@ -50,13 +74,15 @@ export class CartService {
         await cart.save();
     }
 
-    //eliminar un producto del carrito
+    //eliminar un producto del carrito OK!!
     async deleteProductInCart(cid, productId) {
         const cart = await CartModel.findById(cid);
         cart.products = cart.products.filter(product => product.product.toString() !== productId);
         await cart.save();
     }
 
+
+    // actualizar cantidad OK!!
     async updateQuantity(cid, productId, quantity) {
         const cart = await CartModel.findById(cid);
         const product = cart.products.find(product => product.product.toString() === productId);
