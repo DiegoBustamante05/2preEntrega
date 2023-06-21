@@ -4,6 +4,7 @@ import { ProductManager } from "./DAO/productManager.js";
 import { routerProducts } from "./routes/products.router.js";
 import { routerViewProducts } from "./routes/products.view.router.js";
 import { routerViewRealTimeProducts } from "./routes/realtimeproducts.view.router.js";
+import { routerViewCart } from "./routes/cart.view.router.js";
 import { routerCarts } from "./routes/cart.router.js";
 import { __dirname, connectMongo } from "./utils.js";
 import { Server } from "socket.io";
@@ -35,7 +36,7 @@ app.use("/api/carts", routerCarts);
 
 app.use("/view/products", routerViewProducts)
 app.use("/view/realtimeproducts", routerViewRealTimeProducts)
-
+app.use("/view/cart", routerViewCart)
 
 app.use(express.static(__dirname + "/public"));
 
